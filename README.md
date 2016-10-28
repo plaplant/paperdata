@@ -6,27 +6,66 @@
 SETUP
 -----
 
-(1) git clone respository
+The preferred method for installing this package is to use anaconda, and then create a new environment for this package. These instructions assume that anaconda is already installed. If not, installation instructions can be found here: https://docs.continuum.io/anaconda/install.
 
-(2) Rename all .cfg.test files .cfg inside config directory
+The steps for installing are:
 
-	replace fields within with correct credentials
+1. First, clone this repository onto the target machine:
+    ```sh
+    $ git clone https://github.com/plaplant/paperdata.git 
+    ```
+    This will create a new folder named `paperdata` in the target folder.
 
-(3) Install necessary packages through pip
-```js
-pip install -r requirements.txt
-```
+2. Modify the names of the configuration files:
+    ```sh
+    $ cd paperdata/config
+    $ mv paperdata.cfg.test paperdata.cfg
+    ````
 
-(4) [In virtualenv if possible] Run python setup.py develop (for altering package)
+    Perform this renaming for each configuration file. Also note that appropriate usernames, passwords,
+    and hostnames for the MySQL databases need to be provided as well.
 
-    Due to path setup, package MUST be installed in development mode
+3. Set up a new anaconda environment:
 
-### Dev Install
-```js
-python setup.py develop
-```
+    ```sh
+    $ conda create -n paperdata python=2.7 anaconda
+    ```
+    
+4. Activate the new environment:
 
-(5) Further setup required if running docker container or rebuilding database
+    ```sh
+    $ source activate paperdata
+    ```
+
+5. Install additional required packages using anaconda. `paperdata` requires `paramiko` and `mysql-python`:
+
+    ```sh
+    $ conda install paramiko mysql-python
+    ```
+
+6. Run python setup script and install locally. Make sure the following command is
+executed from the directory above paperdata. For example:
+
+    ```sh
+    $ pwd
+    ~/paperdata
+    $ cd ..
+    $ pip install ./paperdata
+    ```
+    
+    This approach will keep the installation of the package local to the established python
+    environment.
+
+7. Check that everything is installed correctly by running a simple command from within python:
+
+    ```python
+    >>> from paper.data import dbi as pdbi
+    >>> dbi = pdbi.DataBaseInterface()
+    ```
+    If all has gone well (including configuring the database config files), then there should be no errors returned.
+
+8. Further setup required if running docker container or rebuilding database. Also note that
+the anaconda environment must be activated in each new instance prior to using this package.
 
 -----------
 DESCRIPTION
