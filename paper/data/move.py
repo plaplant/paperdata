@@ -58,7 +58,7 @@ def set_move_table(s, source_host, source_path, dest_host, dest_path):
     FILE = s.query(pdbi.File).get(source)
     move_dict = {'host': dest_host,
                  'base_path': dest_path,
-                 'source': ':'.join((dest_host, dest_path))
+                 'source': ':'.join((dest_host, dest_path)),
                  'timestamp': timestamp}
     for field, value in move_dict.items():
         setattr(FILE, field, value)
