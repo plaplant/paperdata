@@ -47,7 +47,7 @@ pol_to_str = {v: k for k, v in str_to_pol.items()}
 
 filetypes = ('uv', 'uvcRRE', 'npz')
 
-hosts_file = ppdata.osj(ppdata.root_dir, 'config', 'hostnames.txt')
+hosts_file = ppdata.osj(ppdata.root_dir, 'paper', 'config', 'hostnames.txt')
 with open(hosts_file, 'r') as hf:
     hosts = (host.strip().split('|') for host in hf)
     hostnames = {abbr: full_name for abbr, full_name in hosts}
@@ -123,7 +123,7 @@ class DataBaseInterface(ppdata.DataBaseInterface):
     create_db | creates all defined tables
     drop_db | drops all tables from database
     '''
-    def __init__(self, Base=Base, configfile=ppdata.osj(ppdata.root_dir, 'config', 'paperdata.cfg')):
+    def __init__(self, Base=Base, configfile=ppdata.osj(ppdata.root_dir, 'paper', 'config', 'paperdata.cfg')):
         '''
         Unique Interface for the paperdata database
 
