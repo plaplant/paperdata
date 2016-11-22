@@ -51,7 +51,7 @@ try:
 except ImportError as e:
     import ConfigParser as configparser
 
-root_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+root_dir = os.path.realpath(os.path.dirname(__file__))
 osj = os.path.join
 
 def file_to_jd(path):

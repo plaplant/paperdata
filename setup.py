@@ -11,6 +11,8 @@ setup_args = {
     'package_dir' : {'paperdata': ''},
     'packages' : find_packages(),
     'version': __version__,
+    'package_data': {'': ['config/hostnames.txt',
+                          'config/*.cfg']},
 }
 
 if __name__ == '__main__':
