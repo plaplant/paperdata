@@ -43,7 +43,19 @@ The steps for installing are:
     $ conda install paramiko mysql-python
     ```
 
-6. Run python setup script and install locally. Make sure the following command is
+6. Make a symbolic link to make sure the files in the config directory are installed correctly:
+
+   ```sh
+   $ pwd
+   ~/paperdata
+   $ cd paper
+   $ ln -s ../config .
+   ```
+   
+   This creates a symlink that will make sure the contents of the config directory are installed 
+   with the rest of the package.
+
+7. Run python setup script and install locally. Make sure the following command is
 executed from the directory above paperdata. For example:
 
     ```sh
@@ -56,7 +68,7 @@ executed from the directory above paperdata. For example:
     This approach will keep the installation of the package local to the established python
     environment.
 
-7. Check that everything is installed correctly by running a simple command from within python:
+8. Check that everything is installed correctly by running a simple command from within python:
 
     ```python
     >>> from paper.data import dbi as pdbi
