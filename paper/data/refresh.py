@@ -21,6 +21,7 @@ import datetime
 import socket
 import uuid
 import paper as ppdata
+import paramiko
 from paper.data import dbi as pdbi, uv_data, file_data
 from sqlalchemy import or_
 
@@ -134,7 +135,7 @@ def update_md5(s):
                     'timestamp': timestamp}
         s.add(pdbi.Log(**log_data))
 
-def update_sources(s):
+def update_sources(s,username=None):
     '''
     fixes database files and directories that have been moved/deleted
 
@@ -150,22 +151,32 @@ def update_sources(s):
         if source_host == host:
             for FILE in FILEs:
                 if not os.path.exists(FILE.source):
+                    print("deleting host, base path, filename: {} {} {}".format(
+                        host, FILE.base_path, FILE.filename))
                     s.delete(FILE)
         else:
-            with ppdata.ssh_scope(host) as ssh:
-                with ssh.open_sftp() as sftp:
-                    for FILE in FILEs:
-                        if not path_exists(sftp, FILE.source):
-                            s.delete(FILE)
+            try:
+                with ppdata.ssh_scope(host,username=username) as ssh:
+                    with ssh.open_sftp() as sftp:
+                        for FILE in FILEs:
+                            if not path_exists(sftp, FILE.source):
+                                print(
+                                    "deleting host, base path, filename: {} {} {}".format(
+                                        host, FILE.base_path, FILE.filename))
+                                s.delete(FILE)
+            except paramiko.ssh_exception.AuthenticationException:
+                continue
+            except:
+                raise
 
-def refresh_db():
+def refresh_db(username=None):
     '''
     refreshes database by checking md5sums, paths, obsnums
     connects observations to files
     '''
     dbi = pdbi.DataBaseInterface()
     with dbi.session_scope() as s:
-        update_sources(s)
+        update_sources(s,username=username)
         update_md5(s)
         update_obsnums(s)
         connect_observations(s)

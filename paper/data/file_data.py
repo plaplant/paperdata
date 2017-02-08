@@ -84,8 +84,11 @@ def calc_size(host, path, username=None, password=None):
         size_bytes = byte_size(path)
     else:
         with ppdata.ssh_scope(host, username, password) as ssh:
-            with ssh.open_sftp() as sftp:
-                size_bytes = sftp.stat(path).st_size
+            cmd = ' '.join(["du --apparent-size --block-size=1",path])
+            stdin_, stdout_, stderr_ = ssh.exec_command(cmd)
+            out = stdout_.read()
+            out_list = out.split()
+            size_bytes = int(out_list[0])
 
     return human_size(size_bytes)
 

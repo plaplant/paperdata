@@ -38,7 +38,7 @@ def restore_db(backup_file=None, table=None):
     meta = pdbi.Base.metadata
     load_table = meta.tables[table]
 
-    with dbi.session_scope() as s, open(backup, 'r') as backup_db:
+    with dbi.session_scope() as s, open(backup_file, 'r') as backup_db:
         entry_list = json.load(backup_db)
         for entry_dict in entry_list:
             print(entry_dict.items())
@@ -52,10 +52,10 @@ def restore_db(backup_file=None, table=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Delete files from the database')
     parser.add_argument('--table', type=str, help='table to restore')
-    #parser.add_argument('--file', type=str, help='backup file path')
+    parser.add_argument('--file', type=str, help='backup file path')
 
     args = parser.parse_args()
-    restore_db(table=args.table)
+    restore_db(backup_file=args.file, table=args.table)
     #restore_db(s, table='File')
 
     dbi = pdbi.DataBaseInterface()

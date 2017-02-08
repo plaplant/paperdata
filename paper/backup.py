@@ -45,6 +45,9 @@ def backup_db(db):
     with dbi.session_scope() as s:
         print(timestamp)
         for table, primary_key in tables.items():
+            # If we're trying to access the Log table, then skip it
+            if table.lower()=='log':
+                continue
             db_file = '{table}_{timestamp}.json'.format(table=table.lower(), timestamp=timestamp)
             backup_path = os.path.join(backup_dir, db_file)
             print(db_file)

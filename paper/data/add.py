@@ -40,9 +40,11 @@ def calc_obs_info(s, host, path):
     source = ':'.join((host, path))
 
     if filetype in ('uv', 'uvcRRE'):
-        time_start, time_end, delta_time, julian_date, polarization, length, obsnum = uv_data.calc_uv_data(host, path)
+        time_start, time_end, delta_time, julian_date, polarization, length, obsnum = uv_data.calc_uv_data(
+            host, path, username='obs')
     elif filetype in ('npz',):
-        time_start, time_end, delta_time, julian_date, polarization, length, obsnum = uv_data.calc_npz_data(s, filename)
+        time_start, time_end, delta_time, julian_date, polarization, length, obsnum = uv_data.calc_npz_data(
+            s, filename, username='obs')
 
     era, julian_day, lst = uv_data.date_info(julian_date)
 
@@ -70,8 +72,8 @@ def calc_obs_info(s, host, path):
                  'filetype': filetype,
                  'source': source,
                  'obsnum': obsnum,
-                 'filesize': file_data.calc_size(host, path),
-                 'md5sum': file_data.calc_md5sum(host, path),
+                 'filesize': file_data.calc_size(host, path, username='obs'),
+                 'md5sum': file_data.calc_md5sum(host, path, username='obs'),
                  'tape_index': None,
                  'init_host': host,
                  'is_tapeable': False,
@@ -103,7 +105,9 @@ def dupe_check(s, source_host, source_paths, verbose=False):
     list[str]: paths that are not already in database
     '''
     table = pdbi.File
-    FILEs = s.query(table).filter_by(host=source_host).all()
+    #FILEs = s.query(table).filter_by(host=source_host).all()
+    # New find allows for hostname mangling to make ssh work
+    FILEs = s.query(table).filter(table.host.like("%{}%".format(source_host))).all()
     paths = tuple(os.path.join(FILE.base_path, FILE.filename) for FILE in FILEs)
 
     unique_paths = set(source_paths) - set(paths)
@@ -127,6 +131,9 @@ def add_files_to_db(s, source_host, source_paths, verbose=False):
         if verbose:
             print(source_path)
         obs_info, file_info, log_info = calc_obs_info(s, source_host, source_path)
+        if obs_info['time_start'] == None:
+            # We're not going to add this to the database
+            continue
         try:
             s.add(pdbi.Observation(**obs_info))
         except:
@@ -151,12 +158,12 @@ def add_files(source_host, source_paths):
     '''
     dbi = pdbi.DataBaseInterface()
     with dbi.session_scope() as s:
-        source_paths = sorted(dupe_check(s, source_host, source_paths))
+        source_paths = sorted(dupe_check(s, source_host, source_paths, verbose=True))
 
         uv_paths = [uv_path for uv_path in source_paths if not uv_path.endswith('.npz')]
         npz_paths = [npz_path for npz_path in source_paths if npz_path.endswith('.npz')]
-        add_files_to_db(s, source_host, uv_paths)
-        add_files_to_db(s, source_host, npz_paths)
+        add_files_to_db(s, source_host, uv_paths, verbose=True)
+        add_files_to_db(s, source_host, npz_paths, verbose=True)
     #refresh.refresh_db()
 
 if __name__ == '__main__':

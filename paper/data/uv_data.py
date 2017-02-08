@@ -57,7 +57,13 @@ def jdpol_to_obsnum(jd, pol, djd):
     21480810617
     '''
     dublinjd = jd - 2415020  #use Dublin Julian Date
-    obsint = int(dublinjd / djd)  #divide up by length of obs
+    # check how close we are to having floating point rounding issues
+    # divide up by length of obs
+    div = dublinjd / djd
+    if abs(div - round(div)) < 1e-2:
+        obsint = int(round(div))
+    else:
+        obsint = int(div)
     polnum = pdbi.str_to_pol[pol] + 10
     assert(obsint < 2 ** 31)
 
@@ -274,14 +280,30 @@ def calc_uv_data(host, path, username=None, password=None):
                     except IOError:
                         sftp.put(uv_data_script, moved_script)
 
-            _, _, _ = ssh.exec_command(virt_env)
-            _, uv_dat, _ = ssh.exec_command(uv_comm)
+            if 'pot4' in host:
+                cmd = ';'.join([virt_env, uv_comm])
+            else:
+                cmd = uv_comm
+            _, uv_dat, stderr_ = ssh.exec_command(cmd)
             uv_get = uv_dat.read()
-        time_start, time_end, delta_time,\
-        julian_date, polarization, length, obsnum = [five_round(float(info)) if key in (0, 1, 2, 3, 5)
-                                                     else int(info) if key in (6,)
-                                                     else info
-                                                     for key, info in enumerate(uv_get.split(','))]
+            uv_err = stderr_.read()
+        if uv_get=='':
+            # We got a segfault from reading the miriad file
+            print("error: ",uv_err)
+            return (None,) * 7
+        try:
+            # Unpack the values returned from miriad
+            time_start, time_end, delta_time,\
+                julian_date, polarization, length, obsnum = [five_round(float(info)) if key in (0, 1, 2, 3, 5)
+                                                             else int(info) if key in (6,)
+                                                             else info
+                                                             for key, info in enumerate(uv_get.split(','))]
+        except ValueError:
+            # We tried to convert None values to float or int
+            # Fail gracefully and tell us what went wrong
+            print("Data not found or imported incorrectly")
+            print(uv_err)
+            return (None,) * 7
 
     return time_start, time_end, delta_time, julian_date, polarization, length, obsnum
 
@@ -291,5 +313,5 @@ if __name__ == '__main__':
     uv_data = calc_uv_data(source_host, source_path)
     if uv_data is None:
         sys.exit()
-    output_string = ','.join(uv_data)
+    output_string = ','.join(str(uv) for uv in uv_data)
     print(output_string)
