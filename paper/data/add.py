@@ -160,10 +160,11 @@ def add_files(source_host, source_paths):
     with dbi.session_scope() as s:
         source_paths = sorted(dupe_check(s, source_host, source_paths, verbose=True))
 
-        uv_paths = [uv_path for uv_path in source_paths if not uv_path.endswith('.npz')]
+        #uv_paths = [uv_path for uv_path in source_paths if not uv_path.endswith('.npz')]
+        uv_paths = [uv_path for uv_path in source_paths if uv_path.endswith('.uv')]
         npz_paths = [npz_path for npz_path in source_paths if npz_path.endswith('.npz')]
         add_files_to_db(s, source_host, uv_paths, verbose=True)
-        add_files_to_db(s, source_host, npz_paths, verbose=True)
+        #add_files_to_db(s, source_host, npz_paths, verbose=True)
     #refresh.refresh_db()
 
 if __name__ == '__main__':

@@ -84,7 +84,7 @@ def calc_size(host, path, username=None, password=None):
         size_bytes = byte_size(path)
     else:
         with ppdata.ssh_scope(host, username, password) as ssh:
-            cmd = ' '.join(["du --apparent-size --block-size=1",path])
+            cmd = ' '.join(["du -s -b",path])
             stdin_, stdout_, stderr_ = ssh.exec_command(cmd)
             out = stdout_.read()
             out_list = out.split()

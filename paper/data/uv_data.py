@@ -60,7 +60,7 @@ def jdpol_to_obsnum(jd, pol, djd):
     # check how close we are to having floating point rounding issues
     # divide up by length of obs
     div = dublinjd / djd
-    if abs(div - round(div)) < 1e-2:
+    if abs(div - round(div)) < 5e-2:
         obsint = int(round(div))
     else:
         obsint = int(div)
@@ -270,6 +270,7 @@ def calc_uv_data(host, path, username=None, password=None):
         moved_script = './uv_data.py'
         uv_comm = 'python {moved_script} {host}:{path}'.format(moved_script=moved_script, host=host, path=path)
         virt_env = 'source /usr/global/paper/CanopyVirtualEnvs/PAPER_Distiller/bin/activate'
+        src_env = 'source activate paperdata'
         with ppdata.ssh_scope(host, username, password) as ssh:
             with ssh.open_sftp() as sftp:
                 try:
@@ -282,6 +283,8 @@ def calc_uv_data(host, path, username=None, password=None):
 
             if 'pot4' in host:
                 cmd = ';'.join([virt_env, uv_comm])
+            elif 'pot0' in host or 'pot3' in host:
+                cmd = ';'.join([src_env, uv_comm])
             else:
                 cmd = uv_comm
             _, uv_dat, stderr_ = ssh.exec_command(cmd)
